@@ -64,17 +64,31 @@ local function get_meme(req)
     local buff = image:write_to_buffer(".png")
 
     return {status=200, headers={['content-type'] = 'image/png'}, body=buff}
+end
 
+local function random_meme(req)
+    local text_meme = box.space.vk22.index.id:random(math.random(1, 1000000000))
+    local image_meme = box.space.vk22.index.id:random(math.random(1, 1000000000))
 
+    image = vips.Image.new_from_buffer(image_meme[4])
+    image=make_meme(image, text_meme[2], text_meme[3])
+
+    local buff = image:write_to_buffer(".png")
+
+    return {status=200, headers={['content-type'] = 'image/png'}, body=buff}
 end
 
 local function init()
+    math.randomseed(os.time())
+
     box.cfg()
     init_space()
 
     local httpd = require('http.server').new('0.0.0.0', 1337)
     httpd:route({path = '/set', method = 'POST'}, set_meme)
     httpd:route({path = '/get', method = 'GET'}, get_meme)
+    httpd:route({path = '/random', method = 'GET'}, random_meme)
+    -- httpd:route({ path = '/', file = 'index.html' })
 
 
     httpd:start()
