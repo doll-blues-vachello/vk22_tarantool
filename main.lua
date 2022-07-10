@@ -3,6 +3,35 @@ local Multipart = require("multipart")
 
 -- local image = vips.Image.new_from_file("meme.png", { access = "sequential" })
 
+function string_simil (fx, fy)
+    local n = string.len(fx)
+    local m = string.len(fy)
+    local ssnc = 0
+  
+    if n > m then
+      fx, fy = fy, fx
+      n, m = m, n
+    end
+  
+    for i = n, 1, -1 do
+      if i <= string.len(fx) then
+      for j = 1, n-i+1, 1 do
+          local pattern = string.sub(fx, j, j+i-1)
+          if string.len(pattern) == 0 then break end
+          local found_at = string.find(fy, pattern)
+          if found_at ~= nil then
+            ssnc = ssnc + (2*i)^2
+            fx = string.sub(fx, 0, j-1) .. string.sub(fx, j+i)
+            fy = string.sub(fy, 0, found_at-1) .. string.sub(fy, found_at+i)
+            break
+          end
+        end
+      end
+    end
+  
+    return (ssnc/((n+m)^2))^(1/2)
+  
+  end
 
 local function make_meme(image, up_text, down_text)
     local function gen_text(text, width, height)
@@ -46,6 +75,34 @@ local function set_meme(req)
     local down_text = t['bottom']
     local image = t['image']
 
+    if up_text == nil and down_text == nil and image ~= nil then
+        return {status=200, body="Id of meme with similiar image"}
+    end
+
+    if up_text == nil then
+        up_text = ""
+    end
+
+    if down_text == nil then 
+        down_text = ""
+    end
+
+
+    if image == nil then
+        -- search for image with similiar text
+        local max_score = -1
+        local max_id = -1
+        for i,v in ipairs(box.space.vk22:select({}, {fullscan=true})) do 
+            local score = string_simil(up_text..down_text, v[2]..v[3])
+            if score > max_score then
+                max_score = score
+                max_id = v[1]
+            end
+        end
+        return {status=200, body=tostring(max_id)}
+    end
+
+
     local res = box.space.vk22:insert{nil, up_text, down_text, image}
 
     -- print(dump(res))
@@ -81,7 +138,11 @@ end
 local function init()
     math.randomseed(os.time())
 
-    box.cfg()
+    box.cfg{
+        vinyl_dir = './data',
+        memtx_dir = './data',
+        wal_dir = './data',
+    }
     init_space()
 
     local httpd = require('http.server').new('0.0.0.0', 1337)

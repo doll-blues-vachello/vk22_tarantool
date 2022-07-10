@@ -7,6 +7,7 @@ WORKDIR /app
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install libvips libvips-dev
 RUN tarantoolctl rocks install --server=https://luarocks.org/ multipart && tarantoolctl rocks install http && tarantoolctl rocks install --server=https://luarocks.org/ lua-vips
 
-COPY main.lua .
+COPY main.lua ./
+COPY public public/
 
 CMD ["/bin/tarantool", "/app/main.lua"]

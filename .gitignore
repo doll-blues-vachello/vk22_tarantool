@@ -3,3 +3,4 @@
 *.snap
 *.png
 standalone.lua
+test.lua
