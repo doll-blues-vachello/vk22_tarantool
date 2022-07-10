@@ -15,7 +15,7 @@
 curl --location --request POST 'http://dollblues.kheynov.ru:1337/set' \
 --form 'top="Top text"' \
 --form 'bottom="Bottom text"' \
---form 'image=@"path_to_image.pnf"'
+--form 'image=@"path_to_image.png"'
 ```
 ### Просмотр мема (10 баллов)
 ``` 
